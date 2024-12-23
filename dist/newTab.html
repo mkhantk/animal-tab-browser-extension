@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>New Tab</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        background-color: black;
+        font-family: "Courier New", Courier, monospace;
+      }
+      body > img {
+        width: 100vw; /* Full browser width */
+        height: 100vh;
+        object-fit: cover;
+        display: none;
+      }
+      .loading {
+        color: green;
+        font-size: large;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="loading">Loading...</div>
+    <script src="newTab.js"></script>
+  </body>
+</html>
