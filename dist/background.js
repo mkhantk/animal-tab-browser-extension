@@ -1,15 +1,15 @@
 import { API_ACCESS_KEY } from "./config.js";
 
-console.log("background is loaded");
+// console.log("background is loaded");
 
 // Cache management variables
 let currentAnimal = null;
-let currentImage = 0;
-let imageLimit = 2;
+// let currentImage = 0;
+// let imageLimit = 2;
 
 // Preload images function
 async function preloadImages(animal) {
-  const apiUrl = `https://api.unsplash.com/photos/random?client_id=${API_ACCESS_KEY}&query=${animal}&count=10&orientation=landscape`;
+  const apiUrl = `https://api.unsplash.com/photos/random?client_id=${API_ACCESS_KEY}&query=${animal}&orientation=landscape`;
 
   try {
     const response = await fetch(apiUrl);
@@ -18,17 +18,17 @@ async function preloadImages(animal) {
     const data = await response.json();
 
     // Cache new images
-    const newImages = data.map((image) => image.urls.raw);
-    const cache = await caches.open("image-cache");
+    const newImage = data.urls.raw;
+    // const cache = await caches.open("image-cache");
 
-    await Promise.all(
-      newImages.map(async (url) => {
-        await cache.add(url);
-      })
-    );
+    // await Promise.all(
+    //   newImages.map(async (url) => {
+    //     await cache.add(url);
+    //   })
+    // );
 
     console.log("Images preloaded successfully!");
-    return { success: true, message: "PRELOADING SUCCESS" };
+    return { success: true, message: "PRELOADING SUCCESS", newImage };
   } catch (error) {
     console.error("Error preloading images:", error);
     return { success: false, message: "PRELOADING FAILED" };
@@ -42,62 +42,66 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Handle preloadImages
       if (message.type === "preloadImages") {
         currentAnimal = message.category;
-        currentImage = 0;
+        // currentImage = 0;
 
         // Clear previous cache
-        await caches.delete("image-cache");
+        // await caches.delete("image-cache");
 
-        const result = await preloadImages(currentAnimal);
-        sendResponse(result);
+        // const result = await preloadImages(currentAnimal);
+        sendResponse({
+          success: true,
+          message: "animal choice: " + currentAnimal,
+        });
         return;
       }
 
       // Handle reset
       if (message.type === "reset") {
         currentAnimal = null;
-        currentImage = 0;
-        await caches.delete("image-cache");
+        // currentImage = 0;
+        // await caches.delete("image-cache");
         sendResponse({ success: true, message: "Reset successful" });
         return;
       }
 
       // Handle getNextImages
       if (message.type === "getNextImages") {
-        const cache = await caches.open("image-cache");
-        const cacheKeys = await cache.keys();
+        // const cache = await caches.open("image-cache");
+        // const cacheKeys = await cache.keys();
 
-        console.log("Cache keys:", cacheKeys);
+        // console.log("Cache keys:", cacheKeys);
 
         // Fetch more images if near limit
-        if (currentImage >= cacheKeys.length - imageLimit) {
-          console.log("Fetching more images...");
-          await preloadImages(currentAnimal);
-          await manageCache();
-        }
+        // if (currentImage >= cacheKeys.length - imageLimit) {
+        // console.log("Fetching more images...");
+        const result = await preloadImages(currentAnimal);
+        sendResponse(result);
+        // await manageCache();
+        // }
 
         // Validate cache availability
-        if (currentImage < cacheKeys.length) {
-          const request = cacheKeys[currentImage];
-          const cacheResponse = await cache.match(request);
+        // if (currentImage < cacheKeys.length) {
+        //   const request = cacheKeys[currentImage];
+        //   const cacheResponse = await cache.match(request);
 
-          console.log("Cache Response:", cacheResponse);
+        //   console.log("Cache Response:", cacheResponse);
 
-          if (cacheResponse) {
-            const imageUrl = request.url; // Get image URL
-            currentImage++;
+        //   if (cacheResponse) {
+        //     const imageUrl = request.url; // Get image URL
+        //     currentImage++;
 
-            sendResponse({
-              success: true,
-              nextImage: imageUrl,
-              message: "Image fetched successfully",
-            });
-          } else {
-            throw new Error("Cache fetch failed.");
-          }
-        } else {
-          console.warn("No more images available");
-          sendResponse({ success: false, message: "No more images" });
-        }
+        //     sendResponse({
+        //       success: true,
+        //       nextImage: imageUrl,
+        //       message: "Image fetched successfully",
+        //     });
+        //   } else {
+        //     throw new Error("Cache fetch failed.");
+        //   }
+        // } else {
+        //   console.warn("No more images available");
+        //   sendResponse({ success: false, message: "No images" });
+        // }
 
         return;
       }
@@ -120,15 +124,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-async function manageCache() {
-  const cache = await caches.open("image-cache");
-  const keys = await cache.keys();
+// async function manageCache() {
+//   const cache = await caches.open("image-cache");
+//   const keys = await cache.keys();
 
-  // Keep only the latest 10 images
-  if (keys.length > 10) {
-    for (let i = 0; i < keys.length / 2; i++) {
-      await cache.delete(keys[i]); // Remove old entries
-    }
-    currentImage = keys.length / 2; // Reset index
-  }
-}
+//   // Keep only the latest 10 images
+//   if (keys.length > 10) {
+//     for (let i = 0; i < keys.length / 2; i++) {
+//       await cache.delete(keys[i]); // Remove old entries
+//     }
+//     currentImage = keys.length / 2; // Reset index
+//   }
+// }

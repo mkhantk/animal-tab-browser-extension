@@ -3,7 +3,7 @@ chrome.runtime.sendMessage({ type: "getNextImages" }, (response) => {
     console.log(response.message);
     console.log("error");
   } else {
-    displayImage(response.nextImage);
+    displayImage(response.newImage);
     console.log(response.message);
     console.log("success");
   }
@@ -40,12 +40,14 @@ function displayImage(image) {
   imageElement.src = image;
   imageElement.alt = "";
   document.body.appendChild(imageElement);
+  document.querySelector(".loading").style.display = "none";
+  imageElement.style.display = "block";
 
-  imageElement.onload = () => {
-    console.log("image laoded successfully");
-    document.querySelector(".loading").style.display = "none";
-    imageElement.style.display = "block";
-  };
+  // imageElement.onload = () => {
+  //   console.log("image laoded successfully");
+  //   document.querySelector(".loading").style.display = "none";
+  //   imageElement.style.display = "block";
+  // };
 
   imageElement.onerror = () => {
     console.error("falied to load image");

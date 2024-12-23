@@ -28,7 +28,7 @@ function handleClick(e) {
   chrome.runtime.sendMessage(
     { type: "preloadImages", category },
     (response) => {
-      console.log(response);
+      // console.log(response);
       if (response.success) {
         console.log(response.message);
       } else {
